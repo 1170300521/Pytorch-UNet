@@ -35,16 +35,17 @@ def predict_img(net,
 
         probs = probs.squeeze(0)
 
-        tf = transforms.Compose(
-            [
-                transforms.ToPILImage(),
-                transforms.Resize(full_img.size[1]),
-                transforms.ToTensor()
-            ]
-        )
+#        tf = transforms.Compose(
+#            [
+#                transforms.ToPILImage(),
+#                transforms.Resize(full_img.shape[1]),
+#                transforms.ToTensor()
+#            ]
+#        )
 
-        probs = tf(probs.cpu())
+        # probs = tf(probs.cpu())
         full_mask = probs.squeeze().cpu().numpy()
+        print(full_mask.shape)
 
     return full_mask > out_threshold
 
@@ -52,7 +53,7 @@ def predict_img(net,
 def get_args():
     parser = argparse.ArgumentParser(description='Predict masks from input images',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--model', '-m', default='MODEL.pth',
+    parser.add_argument('--model', '-m', default='./checkpoints/CP_epoch5.pth',
                         metavar='FILE',
                         help="Specify the file in which the model is stored")
     parser.add_argument('--input', '-i', metavar='INPUT', nargs='+',
@@ -71,7 +72,7 @@ def get_args():
                         default=0.5)
     parser.add_argument('--scale', '-s', type=float,
                         help="Scale factor for the input images",
-                        default=0.5)
+                        default=1)
 
     return parser.parse_args()
 
@@ -83,7 +84,7 @@ def get_output_filenames(args):
     if not args.output:
         for f in in_files:
             pathsplit = os.path.splitext(f)
-            out_files.append("{}_OUT{}".format(pathsplit[0], pathsplit[1]))
+            out_files.append("{}_OUT".format(pathsplit[0]))
     elif len(in_files) != len(args.output):
         logging.error("Input files and output files are not of the same length")
         raise SystemExit()
@@ -102,7 +103,7 @@ if __name__ == "__main__":
     in_files = args.input
     out_files = get_output_filenames(args)
 
-    net = UNet(n_channels=3, n_classes=1)
+    net = UNet(n_channels=1, n_classes=3)
 
     logging.info("Loading model {}".format(args.model))
 
@@ -116,7 +117,7 @@ if __name__ == "__main__":
     for i, fn in enumerate(in_files):
         logging.info("\nPredicting image {} ...".format(fn))
 
-        img = Image.open(fn)
+        img = np.load(fn)['data']
 
         mask = predict_img(net=net,
                            full_img=img,
@@ -126,8 +127,9 @@ if __name__ == "__main__":
 
         if not args.no_save:
             out_fn = out_files[i]
-            result = mask_to_image(mask)
-            result.save(out_files[i])
+            for m in range(len(mask)):
+                result = mask_to_image(mask[m])
+                result.save(out_files[i]+str(m)+".png")
 
             logging.info("Mask saved to {}".format(out_files[i]))
 

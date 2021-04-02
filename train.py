@@ -139,7 +139,7 @@ def get_args():
                         help='Load model from a .pth file')
     parser.add_argument('-s', '--scale', dest='scale', type=float, default=1,
                         help='Downscaling factor of the images')
-    parser.add_argument('-n', '--n_classes', dest='n_classes', type=int, default=2,
+    parser.add_argument('-n', '--n_classes', dest='n_classes', type=int, default=3,
                         help='Number of classes to predict')
 #    parser.add_argument('-v', '--validation', dest='val', type=float, default=10.0,
 #                        help='Percent of the data that is used as validation (0-100)')
