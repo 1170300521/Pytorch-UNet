@@ -127,9 +127,9 @@ if __name__ == "__main__":
 
         if not args.no_save:
             out_fn = out_files[i]
-            for m in range(len(mask)):
-                result = mask_to_image(mask[m])
-                result.save(out_files[i]+str(m)+".png")
+            # for m in range(len(mask)):
+            result = mask_to_image(mask)
+            result.save(out_files[i]+".png")
 
             logging.info("Mask saved to {}".format(out_files[i]))
 
